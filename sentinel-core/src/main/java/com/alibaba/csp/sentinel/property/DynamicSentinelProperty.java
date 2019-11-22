@@ -46,25 +46,25 @@ public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
     }
 
     @Override
-    public void updateValue(T newValue) {
+    public boolean updateValue(T newValue) {
         if (isEqual(value, newValue)) {
-            return;
+            return false;
         }
-        RecordLog.info("SentinelProperty, config is real updated to: " + newValue);
+        RecordLog.info("[DynamicSentinelProperty] Config will be updated to: " + newValue);
 
         value = newValue;
         for (PropertyListener<T> listener : listeners) {
             listener.configUpdate(newValue);
         }
-
+        return true;
     }
 
-    public boolean isEqual(T oldValue, T newValue) {
+    private boolean isEqual(T oldValue, T newValue) {
         if (oldValue == null && newValue == null) {
             return true;
         }
 
-        if (oldValue == null && newValue != null) {
+        if (oldValue == null) {
             return false;
         }
 

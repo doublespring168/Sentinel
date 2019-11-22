@@ -19,10 +19,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
 import com.alibaba.csp.sentinel.log.RecordLog;
 
 /**
- * A {@link DataSource} automatically fetches the backend data.
+ * A {@link ReadableDataSource} automatically fetches the backend data.
  *
  * @param <S> source data type
  * @param <T> target data type
@@ -33,12 +34,12 @@ public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, 
     private ScheduledExecutorService service;
     protected long recommendRefreshMs = 3000;
 
-    public AutoRefreshDataSource(ConfigParser<S, T> configParser) {
+    public AutoRefreshDataSource(Converter<S, T> configParser) {
         super(configParser);
         startTimerService();
     }
 
-    public AutoRefreshDataSource(ConfigParser<S, T> configParser, final long recommendRefreshMs) {
+    public AutoRefreshDataSource(Converter<S, T> configParser, final long recommendRefreshMs) {
         super(configParser);
         if (recommendRefreshMs <= 0) {
             throw new IllegalArgumentException("recommendRefreshMs must > 0, but " + recommendRefreshMs + " get");
@@ -47,14 +48,18 @@ public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, 
         startTimerService();
     }
 
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private void startTimerService() {
-        service = Executors.newScheduledThreadPool(1);
+        service = Executors.newScheduledThreadPool(1,
+            new NamedThreadFactory("sentinel-datasource-auto-refresh-task", true));
         service.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 try {
+                    if (!isModified()) {
+                        return;
+                    }
                     T newValue = loadConfig();
-
                     getProperty().updateValue(newValue);
                 } catch (Throwable e) {
                     RecordLog.info("loadConfig exception", e);
@@ -71,4 +76,7 @@ public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, 
         }
     }
 
+    protected boolean isModified() {
+        return true;
+    }
 }

@@ -19,11 +19,11 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -52,8 +52,10 @@ public class SimpleHttpCommandCenter implements CommandCenter {
     private static final int DEFAULT_SERVER_SO_TIMEOUT = 3000;
     private static final int DEFAULT_PORT = 8719;
 
-    private static final Map<String, CommandHandler> handlerMap = new HashMap<String, CommandHandler>();
+    @SuppressWarnings("rawtypes")
+    private static final Map<String, CommandHandler> handlerMap = new ConcurrentHashMap<String, CommandHandler>();
 
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
     private ExecutorService executor = Executors.newSingleThreadExecutor(
         new NamedThreadFactory("sentinel-command-center-executor"));
     private ExecutorService bizExecutor;
@@ -61,6 +63,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
     private ServerSocket socketReference;
 
     @Override
+    @SuppressWarnings("rawtypes")
     public void beforeStart() throws Exception {
         // Register handlers
         Map<String, CommandHandler> handlers = CommandHandlerProvider.getInstance().namedHandlers();
@@ -94,55 +97,56 @@ public class SimpleHttpCommandCenter implements CommandCenter {
 
             @Override
             public void run() {
-                int repeat = 0;
-
-                int tmpPort = port;
                 boolean success = false;
-                while (true) {
-                    ServerSocket serverSocket = null;
-                    try {
-                        serverSocket = new ServerSocket(tmpPort);
-                    } catch (IOException ex) {
-                        CommandCenterLog.info(
-                            String.format("IO error occurs, port: %d, repeat times: %d", tmpPort, repeat), ex);
+                ServerSocket serverSocket = getServerSocketFromBasePort(port);
 
-                        tmpPort = adjustPort(repeat);
-                        try {
-                            TimeUnit.SECONDS.sleep(5);
-                        } catch (InterruptedException e1) {
-                            break;
-                        }
-                        repeat++;
-                    }
-
-                    if (serverSocket != null) {
-                        CommandCenterLog.info("[CommandCenter] Begin listening at port " + serverSocket.getLocalPort());
-                        socketReference = serverSocket;
-                        executor.submit(new ServerThread(serverSocket));
-                        success = true;
-                        break;
-                    }
-                }
-
-                if (success) {
-                    tmpPort = port;
+                if (serverSocket != null) {
+                    CommandCenterLog.info("[CommandCenter] Begin listening at port " + serverSocket.getLocalPort());
+                    socketReference = serverSocket;
+                    executor.submit(new ServerThread(serverSocket));
+                    success = true;
+                    port = serverSocket.getLocalPort();
                 } else {
-                    tmpPort = PORT_UNINITIALIZED;
+                    CommandCenterLog.info("[CommandCenter] chooses port fail, http command center will not work");
                 }
-                TransportConfig.setRuntimePort(tmpPort);
+
+                if (!success) {
+                    port = PORT_UNINITIALIZED;
+                }
+
+                TransportConfig.setRuntimePort(port);
                 executor.shutdown();
             }
 
-            /**
-             * Adjust the port to settle down.
-             */
-            private int adjustPort(int repeat) {
-                int mod = repeat / 5;
-                return port + mod;
-            }
         };
 
         new Thread(serverInitTask).start();
+    }
+
+    /**
+     * Get a server socket from an available port from a base port.<br>
+     * Increasing on port number will occur when the port has already been used.
+     *
+     * @param basePort base port to start
+     * @return new socket with available port
+     */
+    private static ServerSocket getServerSocketFromBasePort(int basePort) {
+        int tryCount = 0;
+        while (true) {
+            try {
+                ServerSocket server = new ServerSocket(basePort + tryCount / 3, 100);
+                server.setReuseAddress(true);
+                return server;
+            } catch (IOException e) {
+                tryCount++;
+                try {
+                    TimeUnit.MILLISECONDS.sleep(30);
+                } catch (InterruptedException e1) {
+                    break;
+                }
+            }
+        }
+        return null;
     }
 
     @Override
@@ -206,10 +210,12 @@ public class SimpleHttpCommandCenter implements CommandCenter {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public static CommandHandler getHandler(String commandName) {
         return handlerMap.get(commandName);
     }
 
+    @SuppressWarnings("rawtypes")
     public static void registerCommands(Map<String, CommandHandler> handlerMap) {
         if (handlerMap != null) {
             for (Entry<String, CommandHandler> e : handlerMap.entrySet()) {
@@ -218,13 +224,14 @@ public class SimpleHttpCommandCenter implements CommandCenter {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public static void registerCommand(String commandName, CommandHandler handler) {
         if (StringUtil.isEmpty(commandName)) {
             return;
         }
 
         if (handlerMap.containsKey(commandName)) {
-            CommandCenterLog.info("Register failed (duplicate command): " + commandName);
+            CommandCenterLog.warn("Register failed (duplicate command): " + commandName);
             return;
         }
 

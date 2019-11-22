@@ -15,11 +15,6 @@
  */
 package com.alibaba.csp.sentinel.demo.degrade;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
@@ -29,16 +24,24 @@ import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * <p>
  * Degrade is used when the resources are in an unstable state, these resources
- * will be degraded within the next defined time window. There are two ways to
+ * will be degraded within the next defined time window. There are three ways to
  * measure whether a resource is stable or not:
  * <ul>
  * <li>
  * Exception ratio: When the ratio of exception count per second and the success
- * qps exceeds the threshold , access to the resource will be blocked in the
- * coming window.
+ * qps greats than or equals to the threshold, access to the resource will be blocked
+ * in the coming time window.
+ * </li>
+ * <li>
+ * Exception Count, see {@link ExceptionCountDegradeDemo}.
  * </li>
  * <li>
  * For average response time, see {@link RtDegradeDemo}.
@@ -110,8 +113,9 @@ public class ExceptionRatioDegradeDemo {
         rule.setResource(KEY);
         // set limit exception ratio to 0.1
         rule.setCount(0.1);
-        rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION);
+        rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO);
         rule.setTimeWindow(10);
+        rule.setMinRequestAmount(20);
         rules.add(rule);
         DegradeRuleManager.loadRules(rules);
     }

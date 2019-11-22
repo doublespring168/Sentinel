@@ -15,9 +15,9 @@
  */
 package com.alibaba.csp.sentinel.util;
 
-import java.io.File;
-
 import com.alibaba.csp.sentinel.log.RecordLog;
+
+import java.io.File;
 
 /**
  * Util class for getting application name. This class uses the flowing order to get app's name:
@@ -47,6 +47,8 @@ public final class AppNameUtil {
 
     public static final String APP_NAME = "project.name";
     public static final String SUN_JAVA_COMMAND = "sun.java.command";
+    private static final String JAR_SUFFIX_LOWER = ".jar";
+    private static final String JAR_SUFFIX_UPPER = ".JAR";
 
     private static String appName;
 
@@ -55,7 +57,7 @@ public final class AppNameUtil {
 
     static {
         resolveAppName();
-        RecordLog.info("app name resolved: " + appName);
+        RecordLog.info("App name resolved: " + appName);
     }
 
     public static void resolveAppName() {
@@ -72,11 +74,17 @@ public final class AppNameUtil {
             return;
         }
         command = command.split("\\s")[0];
-        if (command.contains(File.separator)) {
-            String[] strs = command.split(File.separator);
+        String separator = File.separator;
+        if (command.contains(separator)) {
+            String[] strs;
+            if ("\\".equals(separator)) {
+                strs = command.split("\\\\");
+            } else {
+                strs = command.split(separator);
+            }
             command = strs[strs.length - 1];
         }
-        if (command.endsWith(".jar") || command.endsWith(".JAR")) {
+        if (command.endsWith(JAR_SUFFIX_LOWER) || command.endsWith(JAR_SUFFIX_UPPER)) {
             command = command.substring(0, command.length() - 4);
         }
         appName = command;

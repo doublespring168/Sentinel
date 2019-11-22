@@ -1,7 +1,12 @@
 # Sentinel Dubbo Adapter
 
+> Note: 中文文档请见[此处](https://github.com/alibaba/Sentinel/wiki/%E4%B8%BB%E6%B5%81%E6%A1%86%E6%9E%B6%E7%9A%84%E9%80%82%E9%85%8D#dubbo)。
+
 Sentinel Dubbo Adapter provides service consumer filter and provider filter
-for [Dubbo](http://dubbo.io/) services. 
+for [Dubbo](https://dubbo.apache.org/en-us/) services.
+
+**Note: This adapter only supports legacy Dubbo 2.6.x version and below.**
+For new Apache Dubbo 2.7.x or above version, please use `sentinel-apache-dubbo-adapter` module instead.
 
 To use Sentinel Dubbo Adapter, you can simply add the following dependency to your `pom.xml`:
 
@@ -26,7 +31,7 @@ If you don't want the filters enabled, you can manually disable them. For exampl
 <dubbo:provider filter="-sentinel.dubbo.provider.filter"/>
 ```
 
-For more details of Dubbo filter, see [here](https://dubbo.incubator.apache.org/#/docs/dev/impls/filter.md?lang=en-us).
+For more details of Dubbo filter, see [here](http://dubbo.apache.org/en-us/docs/dev/impls/filter.html).
 
 ## Dubbo resources
 
@@ -51,3 +56,13 @@ so developers should manually put the application name into *attachment* at cons
 then extract it at provider side. Sentinel Dubbo Adapter has implemented a filter (`DubboAppContextFilter`)
 where consumer can carry application name information to provider automatically.
 If the consumer does not use Sentinel Dubbo Adapter but requires flow control based on caller, developers can manually put the application name into attachment with the key `dubboApplication`.
+
+## Global fallback
+
+Sentinel Dubbo Adapter supports global fallback configuration.
+The global fallback will handle exceptions and give replacement result when blocked by
+flow control, degrade or system load protection. You can implement your own `DubboFallback` interface
+and then register to `DubboFallbackRegistry`. If no fallback is configured, Sentinel will wrap the `BlockException`
+then directly throw it out.
+
+Besides, we can also leverage [Dubbo mock mechanism](http://dubbo.apache.org/en-us/docs/user/demos/local-mock.html) to provide fallback implementation of degraded Dubbo services.
