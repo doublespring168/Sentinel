@@ -1,8 +1,9 @@
 package com.alibaba.csp.sentinel.dashboard.doublespring;
 
-import com.sun.tools.javac.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 public class ShortSnowFlakeIdGenerator implements IdGenerator<Long> {
 
@@ -91,7 +92,8 @@ public class ShortSnowFlakeIdGenerator implements IdGenerator<Long> {
         Long no = System.currentTimeMillis() % WORKER_ID_MAX;
         int workerId = no.intValue();
 
-        Assert.checkNonNull(workerId, "workerId 为空");
+        Objects.requireNonNull(workerId);
+
         if (shortSnowFlakeIdGenerator == null) {
             synchronized (ShortSnowFlakeIdGenerator.class) {
                 if (shortSnowFlakeIdGenerator == null) {

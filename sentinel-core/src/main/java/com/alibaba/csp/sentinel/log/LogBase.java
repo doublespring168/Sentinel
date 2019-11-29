@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.log;
 
+import com.alibaba.csp.sentinel.util.AppNameUtil;
 import com.alibaba.csp.sentinel.util.PidUtil;
 
 import java.io.File;
@@ -105,7 +106,8 @@ public class LogBase {
         System.out.println("INFO: log base dir is: " + logBaseDir);
 
 
-        String usePid = properties.getProperty(LOG_NAME_USE_PID);
+        //默认开启
+        String usePid = properties.getProperty(LOG_NAME_USE_PID, "true");
         logNameUsePid = "true".equalsIgnoreCase(usePid);
         System.out.println("INFO: log name use pid is: " + logNameUsePid);
     }
@@ -178,7 +180,8 @@ public class LogBase {
             case LOG_OUTPUT_TYPE_FILE:
                 String fileName = LogBase.getLogBaseDir() + logName;
                 if (isLogNameUsePid()) {
-                    fileName += ".pid" + PidUtil.getPid();
+                    // ".pid_"+ AppNameUtil.getAppName() + PidUtil.getPid();
+                    fileName += String.format(".%s%s%s", AppNameUtil.getAppName(), ".pid_", PidUtil.getPid());
                 }
                 try {
                     handler = new DateFileLogHandler(fileName + ".%d", 1024 * 1024 * 200, 4, true);
