@@ -181,7 +181,8 @@ public class LogBase {
                 String fileName = LogBase.getLogBaseDir() + logName;
                 if (isLogNameUsePid()) {
                     // ".pid_"+ AppNameUtil.getAppName() + PidUtil.getPid();
-                    fileName += String.format(".%s%s%s", AppNameUtil.getAppName(), ".pid_", PidUtil.getPid());
+                    String appName = AppNameUtil.getAppName();
+                    fileName += String.format(".%s%s%s", appName, ".pid_", PidUtil.getPid());
                 }
                 try {
                     handler = new DateFileLogHandler(fileName + ".%d", 1024 * 1024 * 200, 4, true);

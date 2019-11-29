@@ -5,7 +5,7 @@
     <parent>
         <artifactId>sentinel-demo-cluster</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.7.1-SNAPSHOT</version>
+        <version>1.7.12-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -34,16 +34,17 @@
             <artifactId>sentinel-cluster-client-default</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.alibaba.csp</groupId>
-            <artifactId>sentinel-cluster-server-default</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <!-- Nacos for dynamic data source -->
         <dependency>
             <groupId>com.alibaba.csp</groupId>
-            <artifactId>sentinel-datasource-nacos</artifactId>
+            <artifactId>sentinel-datasource-zookeeper</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- for a real web demo -->
@@ -61,5 +62,8 @@
             <artifactId>spring-boot-starter-web</artifactId>
             <version>${spring.boot.version}</version>
         </dependency>
+
+
+
     </dependencies>
 </project>
