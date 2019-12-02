@@ -38,13 +38,7 @@
         <!-- Nacos for dynamic data source -->
         <dependency>
             <groupId>com.alibaba.csp</groupId>
-            <artifactId>sentinel-datasource-zookeeper</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-log4j12</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-            </exclusions>
+            <artifactId>sentinel-datasource-nacos</artifactId>
         </dependency>
 
         <!-- for a real web demo -->
@@ -62,7 +56,11 @@
             <artifactId>spring-boot-starter-web</artifactId>
             <version>${spring.boot.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-cluster-server-default</artifactId>
+            <version>1.7.13-SNAPSHOT</version>
+        </dependency>
 
 
     </dependencies>
