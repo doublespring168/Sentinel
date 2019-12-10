@@ -42,8 +42,8 @@ public class HeartbeatSenderInitFunc implements InitFunc {
     private void initSchedulerIfNeeded() {
         if (pool == null) {
             pool = new ScheduledThreadPoolExecutor(2,
-                new NamedThreadFactory("sentinel-heartbeat-send-task", true),
-                new DiscardOldestPolicy());
+                    new NamedThreadFactory("sentinel-heartbeat-send-task", true),
+                    new DiscardOldestPolicy());
         }
     }
 
@@ -54,6 +54,9 @@ public class HeartbeatSenderInitFunc implements InitFunc {
             RecordLog.warn("[HeartbeatSenderInitFunc] WARN: No HeartbeatSender loaded");
             return;
         }
+
+        RecordLog.info("Init HeartbeatSender ...");
+
 
         initSchedulerIfNeeded();
         long interval = retrieveInterval(sender);
@@ -73,12 +76,12 @@ public class HeartbeatSenderInitFunc implements InitFunc {
         Long intervalInConfig = TransportConfig.getHeartbeatIntervalMs();
         if (isValidHeartbeatInterval(intervalInConfig)) {
             RecordLog.info("[HeartbeatSenderInitFunc] Using heartbeat interval "
-                + "in Sentinel config property: " + intervalInConfig);
+                    + "in Sentinel config property: " + intervalInConfig);
             return intervalInConfig;
         } else {
             long senderInterval = sender.intervalMs();
             RecordLog.info("[HeartbeatSenderInit] Heartbeat interval not configured in "
-                + "config property or invalid, using sender default: " + senderInterval);
+                    + "config property or invalid, using sender default: " + senderInterval);
             return senderInterval;
         }
     }
@@ -88,6 +91,7 @@ public class HeartbeatSenderInitFunc implements InitFunc {
             @Override
             public void run() {
                 try {
+                    RecordLog.info("Sending Heartbeat Info ...");
                     sender.sendHeartbeat();
                 } catch (Throwable e) {
                     RecordLog.warn("[HeartbeatSender] Send heartbeat error", e);
@@ -95,6 +99,6 @@ public class HeartbeatSenderInitFunc implements InitFunc {
             }
         }, 5000, interval, TimeUnit.MILLISECONDS);
         RecordLog.info("[HeartbeatSenderInit] HeartbeatSender started: "
-            + sender.getClass().getCanonicalName());
+                + sender.getClass().getCanonicalName());
     }
 }
