@@ -5,7 +5,7 @@
     <parent>
         <artifactId>sentinel-demo-cluster</artifactId>
         <groupId>com.alibaba.csp</groupId>
-        <version>1.7.14-SNAPSHOT</version>
+        <version>1.7.12-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -33,7 +33,7 @@
 
         <dependency>
             <groupId>com.alibaba.csp</groupId>
-            <artifactId>sentinel-datasource-nacos</artifactId>
+            <artifactId>sentinel-datasource-zookeeper</artifactId>
         </dependency>
 
         <dependency>
@@ -41,13 +41,5 @@
             <artifactId>logback-classic</artifactId>
             <version>1.2.3</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.alibaba.csp</groupId>
-            <artifactId>sentinel-cluster-server-default</artifactId>
-            <version>1.7.14-SNAPSHOT</version>
-        </dependency>
-
-
     </dependencies>
 </project>
