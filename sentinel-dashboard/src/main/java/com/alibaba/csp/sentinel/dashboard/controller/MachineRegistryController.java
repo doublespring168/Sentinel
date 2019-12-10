@@ -16,6 +16,7 @@
 package com.alibaba.csp.sentinel.dashboard.controller;
 
 import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
+import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineDiscovery;
@@ -67,6 +68,9 @@ public class MachineRegistryController {
             machineInfo.setHeartbeatVersion(version);
             machineInfo.setLastHeartbeat(System.currentTimeMillis());
             machineInfo.setVersion(sentinelVersion);
+
+            RecordLog.info("Received Heartbeat Info", String.format("app[%s],appType[%d],hostname[%s],ip[%s],port[%d]", app, appType, hostname, ip, port));
+
             appManagement.addMachine(machineInfo);
             return Result.ofSuccessMsg("success");
         } catch (Exception e) {

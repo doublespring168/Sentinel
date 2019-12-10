@@ -55,6 +55,8 @@ public class HeartbeatSenderInitFunc implements InitFunc {
             return;
         }
 
+        RecordLog.info("Init Heartbeat Sender ...");
+
         initSchedulerIfNeeded();
         long interval = retrieveInterval(sender);
         setIntervalIfNotExists(interval);
@@ -88,6 +90,7 @@ public class HeartbeatSenderInitFunc implements InitFunc {
             @Override
             public void run() {
                 try {
+                    RecordLog.info("Sending Heartbeat ...");
                     sender.sendHeartbeat();
                 } catch (Throwable e) {
                     RecordLog.warn("[HeartbeatSender] Send heartbeat error", e);
