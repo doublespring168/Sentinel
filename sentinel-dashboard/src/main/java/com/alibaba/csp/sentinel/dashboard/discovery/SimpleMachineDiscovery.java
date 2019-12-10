@@ -25,6 +25,9 @@ import java.util.concurrent.ConcurrentMap;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 
 import org.springframework.stereotype.Component;
+import top.doublespring.log.LCT;
+import top.doublespring.log.LogUtil;
+import top.doublespring.utils.U;
 
 /**
  * @author leyou
@@ -37,7 +40,13 @@ public class SimpleMachineDiscovery implements MachineDiscovery {
     @Override
     public long addMachine(MachineInfo machineInfo) {
         AssertUtil.notNull(machineInfo, "machineInfo cannot be null");
-        AppInfo appInfo = apps.computeIfAbsent(machineInfo.getApp(), o -> new AppInfo(machineInfo.getApp(), machineInfo.getAppType()));
+        AppInfo appInfo = apps.computeIfAbsent(machineInfo.getApp(), o -> {
+            String app = machineInfo.getApp();
+            Integer appType = machineInfo.getAppType();
+            AppInfo appInfo1 = new AppInfo(app, appType);
+            LogUtil.info(LCT.CODE_1001, "AppInfo 不存在即将新建", U.format("app", app, "appType", appType));
+            return appInfo1;
+        });
         appInfo.addMachine(machineInfo);
         return 1;
     }
